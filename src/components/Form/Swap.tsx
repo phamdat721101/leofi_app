@@ -289,7 +289,7 @@ export const SwapForm: React.FC = () => {
             ) : isConfirming ? (
               <Button
                 disabled
-                className="btn-grad h-[54px] w-full flex items-center justify-center"
+                className="btn-grad-animate h-[54px] w-full flex items-center justify-center"
               >
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Waiting for confirmation...

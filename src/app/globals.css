@@ -29,6 +29,19 @@ body {
   z-index: 12;
 }
 
+.text-grad {
+  /* background: -webkit-linear-gradient(#f09819, #ff512f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; */
+
+  background: -webkit-linear-gradient(left, #f09819, #ff512f);
+  background: -o-linear-gradient(right, #f09819, #ff512f);
+  background: -moz-linear-gradient(right, #f09819, #ff512f);
+  background: linear-gradient(to right, #f09819, #ff512f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .btn-grad {
   /* background-image: linear-gradient(to right, #FF512F 0%, #F09819  51%, #FF512F  100%); */
   background-image: linear-gradient(270deg, #f09819 -0.08%, #ff512f);
@@ -203,4 +216,59 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .swap {
   color: hsla(0, 0%, 100%, 0.8);
+}
+
+.btn-grad-animate {
+  background: linear-gradient(270deg, #f09819, #ff512f);
+  background-size: 400% 400%;
+
+  -webkit-animation: AnimationName 2s ease infinite;
+  -moz-animation: AnimationName 2s ease infinite;
+  -o-animation: AnimationName 2s ease infinite;
+  animation: AnimationName 2s ease infinite;
+}
+
+@-webkit-keyframes AnimationName {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+@-moz-keyframes AnimationName {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+@-o-keyframes AnimationName {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+@keyframes AnimationName {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }

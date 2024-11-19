@@ -26,8 +26,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      {/* <head>
-      <Image
+      <head>
+        {/* <Image
           className="dark:invert"
           src="/leofi_logo.png"
           alt="Next.js logo"
@@ -36,8 +36,8 @@ export default function RootLayout({
           priority
         />
 
-<div className="btn-grad touch">Connect Wallet</div>
-      </head> */}
+<div className="btn-grad touch">Connect Wallet</div> */}
+      </head>
       <body
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

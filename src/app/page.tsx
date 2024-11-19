@@ -1,14 +1,15 @@
 "use client";
-import Chart from "@/components/Chart/Chart";
+import Chart from "@/components/Chart/EChart";
 import { SwapForm } from "@/components/Form/Swap"; // Import the SwapForm component
 import History from "@/components/History";
+// import { chartData } from "@/components/Chart/EChart";
 
 export default function Home() {
   return (
     <div className="px-4 md:px-6 lg:px-8 font-[family-name:var(--font-geist-sans)] min-h-screen">
       <main className="max-w-7xl mx-auto py-6 md:py-8">
         <div className="grid grid-cols-1 md:grid-cols-5  gap-6 items-center">
-          <div className="col-span-1 md:col-span-3 bg-white rounded-lg shadow-sm p-1">
+          <div className="col-span-1 md:col-span-3 rounded-lg shadow-sm">
             <Chart />
           </div>
           <div className="container col-span-1 md:col-span-2 rounded-lg shadow-sm">
