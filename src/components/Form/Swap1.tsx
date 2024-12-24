@@ -59,7 +59,9 @@ export const SwapForm: React.FC = () => {
           const result = await response.json();
           setPriceA(result.Price);
         }
-      } catch (error) {}
+      } catch (error) {
+        console.log("Error message: ", error)
+      }
     };
 
     const fetchBPrice = async () => {
@@ -72,7 +74,9 @@ export const SwapForm: React.FC = () => {
           const result = await response.json();
           setPriceB(result.price * 10 ** 10);
         }
-      } catch (error) {}
+      } catch (error) {
+        console.log("Error message: ", error)
+      }
     };
 
     fetchAPrice();
