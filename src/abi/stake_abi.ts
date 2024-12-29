@@ -274,4 +274,4 @@ export const stake_abi = [
       "stateMutability": "nonpayable",
       "type": "function"
     }
-]
+  ]

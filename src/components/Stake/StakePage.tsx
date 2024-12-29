@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card"
 import StakeCard from "./Stake"
+import History from "./StakeHistory"
 export default function StakingCard() {
   return (
     <div className="min-h-screen">
@@ -43,6 +44,7 @@ export default function StakingCard() {
                 </div>
               </Card>
             </div>
+            <History />
           </div>
 
           {/* Right Panel */}

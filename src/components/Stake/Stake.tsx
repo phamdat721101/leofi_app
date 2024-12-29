@@ -1,47 +1,114 @@
 'use client'
 /* eslint-disable */
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import UpDownIcon from "@/assets/icon/UpDownIcon"
 import { useWeb3Modal } from '@web3modal/wagmi/react'
-import { useAccount, useWriteContract,useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import Image from "next/image"
 import { stake_abi } from '@/abi/stake_abi'
+import { abi } from '@/abi/abi'
 import { parseEther } from "viem"
 import { Loader2 } from "lucide-react"
+import Link from "next/link"
 
 export default function StakeCard() {
   const [activeTab, setActiveTab] = useState("Stake")
   const { open } = useWeb3Modal();
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const [amountAInput, setAmountAInput] = useState("");
   const [amountBInput, setAmountBInput] = useState("");
+  const [tokenA, setTokenA] = useState(process.env.NEXT_PUBLIC_TOKEN_NAME);
+  const [tokenB, setTokenB] = useState(process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME);
   const amountAInputRef = useRef<HTMLInputElement>(null);
+  const [maxGold, setMaxGold] = useState(0)
+  const stake_contract = process.env.NEXT_PUBLIC_STAKE_CONTRACT as `0x${string}` ?? "0x42a2F4e5389F6e7466D97408724Dba38812f184E"
+  const gold_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
+
   const changeActiveTab = () => {
     if (activeTab == "Stake") {
       setActiveTab("Unstake");
+      setTokenA(process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME);
+      setTokenB(process.env.NEXT_PUBLIC_TOKEN_NAME);
     }
     else {
       setActiveTab("Stake");
+      setTokenA(process.env.NEXT_PUBLIC_TOKEN_NAME);
+      setTokenB(process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME);
     }
   }
+
+  useEffect(() => {
+    if (activeTab == "Unstake") {
+      setTokenA(process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME);
+      setTokenB(process.env.NEXT_PUBLIC_TOKEN_NAME);
+    }
+    else {
+      setTokenA(process.env.NEXT_PUBLIC_TOKEN_NAME);
+      setTokenB(process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME);
+    }
+  },[activeTab])
+
   const { writeContract, isPending, data: hash } = useWriteContract();
+
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({
       hash,
     });
 
+  const balanceOf = useReadContract({
+    abi: abi,
+    address: gold_contract,
+    functionName: "balanceOf",
+    args: [address || "0x0"],
+  });
+
+  const calculateReward = useReadContract({
+    abi: stake_abi,
+    address: stake_contract,
+    functionName: "calculateReward",
+    args: [address || "0x0"],
+  });
+
+  function truncateAddress(address: string) {
+    return `${address.slice(0, 6)}...${address.slice(-6)}`;
+  }
+
+  useEffect(() => {
+    setTokenA(process.env.NEXT_PUBLIC_TOKEN_NAME);
+    setTokenB(process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME);
+  }, [])
+
+
+  useEffect(() => {
+    console.log("address:", address);
+    console.log("balanceOf:", balanceOf);
+    console.log("calculateReward:", calculateReward);
+    setMaxGold(parseFloat(balanceOf?.data?.toString() ?? "0") / (10 ** 18));
+  }, [address, balanceOf])
+
   const handleStake = async () => {
     try {
-      writeContract({
-        abi: stake_abi,
-        address: process.env.NEXT_PUBLIC_STAKE_CONTRACT as `0x${string}`,
-        functionName: "stake",
-        args: [parseEther(amountAInput)]
-      });
+      if (activeTab == "Stake") {
+        writeContract({
+          abi: stake_abi,
+          address: stake_contract,
+          functionName: "stake",
+          args: [parseEther(amountAInput)]
+        });
+      }
+      else {
+        writeContract({
+          abi: stake_abi,
+          address: stake_contract,
+          functionName: "unstake",
+          args: [parseEther(amountAInput)]
+        });
+      }
+
     } catch (error) {
       console.error('Stake failed:', error);
     }
@@ -97,11 +164,11 @@ export default function StakeCard() {
                       />
                       <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         <Button variant="secondary" className="bg-gray-700 hover:bg-gray-600 text-white">
-                          {process.env.NEXT_PUBLIC_TOKEN_NAME}
+                          {tokenA}
                         </Button>
                       </div>
                       <div className="absolute right-3 top-14 mt-1 text-sm text-gray-400">
-                        Max: 0.00
+                        Max: {maxGold}
                       </div>
                     </div>
 
@@ -117,10 +184,11 @@ export default function StakeCard() {
                         placeholder="0.00"
                         className="coin-swap h-16"
                         value={amountBInput}
+                        readOnly={true}
                       />
                       <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         <Button variant="secondary" className="bg-gray-700 hover:bg-gray-600 text-white">
-                          {process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME}
+                          {tokenB}
                         </Button>
                       </div>
                     </div>
@@ -137,20 +205,20 @@ export default function StakeCard() {
                           width={32}
                           height={32}
                         />
-                        {amountAInput} {process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME}
+                        {amountAInput} {tokenB}
                       </span>
                     </div>
                     <div className="flex justify-between text-gray-400">
-                      <span>Your {process.env.NEXT_PUBLIC_TOKEN_NAME} balance</span>
-                      <span>{100 + amountAInput} {process.env.NEXT_PUBLIC_TOKEN_NAME}</span>
+                      <span>Your {tokenA} balance</span>
+                      <span>{100 + amountAInput} {tokenA}</span>
                     </div>
                     <div className="flex justify-between text-gray-400">
-                      <span>Your {process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME} balance</span>
-                      <span>{50 + amountAInput} {process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME}</span>
+                      <span>Your {tokenB} balance</span>
+                      <span>{50 + amountAInput} {tokenB}</span>
                     </div>
                     <div className="flex justify-between text-gray-400">
                       <span>Your share of the pool</span>
-                      <span>{((50 + parseFloat(amountAInput)) / 100000000)}%</span>
+                      <span>0.0000025%</span>
                     </div>
                   </div>
                   {
@@ -195,6 +263,21 @@ export default function StakeCard() {
                       )
                     )
                   }
+                  {isConfirmed && (
+                    <div className="mt-2 text-white text-xs">
+                      <h3>Transaction confirmed!</h3>
+                      <span>
+                        Hash:{" "}
+                        <Link
+                          href={`https://sepolia-explorer.metisdevops.link/tx/${hash}`}
+                          className="font-bold"
+                          target="_blank"
+                        >
+                          {hash && truncateAddress(hash)}
+                        </Link>
+                      </span>
+                    </div>
+                  )}
 
                 </CardContent>
               </Card>
