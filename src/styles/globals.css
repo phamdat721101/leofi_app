@@ -183,6 +183,15 @@ input[type="number"]::-webkit-inner-spin-button {
   margin: 0;
 }
 
+.coin-swap {
+  background: #282e3a;
+  border: none;
+  /* color: #fefefe; */
+  color: #a8a8a8;
+  font-size: 24px;
+  font-weight: 700;
+}
+
 .coin-input-22 {
   background: #282e3a;
   border: none;

@@ -110,8 +110,8 @@ export const SwapForm: React.FC = () => {
     if (+amountAInput > 0) {
       writeContract({
         abi,
-        address: "0x8Dc5B2Ccb8F325898832129e5507237268d561A8",
-        functionName: "buy_gold",
+        address: "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32",
+        functionName: "buyGold",
         args: [],
         value: parseEther(amountAInput),
       });

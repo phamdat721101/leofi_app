@@ -1,4 +1,6 @@
 "use client";
+/* eslint-disable */
+
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
@@ -12,21 +14,48 @@ import {
 import { formatUnits, parseEther } from "ethers";
 import { abi } from "@/abi/abi";
 import { Button } from "../ui/button";
-import { ArrowDownUp, Fuel, Loader2 } from "lucide-react";
+import { ArrowDownUp, Search, Loader2, Fuel } from "lucide-react";
 import { Token } from "@/types";
 import Link from "next/link";
-// import TokenSelect from "../shared/TokenSelect"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { chainData } from "@/data/chainData";
+
+type TokenType = {
+  tokenSymbol: string;
+  tokenName: string;
+  contractAddress: string;
+  decimals: number;
+  chainId: number;
+  logoURI: string;
+  price: number;
+};
+
+interface TokenSelectorProps {
+  onSelect: (token: TokenType) => void;
+  selectedToken: TokenType;
+  title: string;
+}
+
+const xau_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
 
 export const SwapForm: React.FC = () => {
   const [tokenAInput, setTokenAInput] = useState<Token>({
     name: "METIS",
     logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/9640.png",
     unit: "METIS",
+    price: 45.78
   });
   const [tokenBInput, setTokenBInput] = useState<Token>({
     name: "GOLD",
     logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
     unit: "Ounce",
+    price: 2611.17
   });
   const [amountAInput, setAmountAInput] = useState("");
   const [amountBInput, setAmountBInput] = useState("");
@@ -35,18 +64,91 @@ export const SwapForm: React.FC = () => {
   const [priceA, setPriceA] = useState(0);
   const [priceB, setPriceB] = useState(0);
   const { isConnected, address } = useAccount();
+  const amountAInputRef = useRef<HTMLInputElement>(null);
+  const [selectedTokenA, setSelectedTokenA] = useState<TokenType>(chainData[0]);
+  const [selectedTokenB, setSelectedTokenB] = useState<TokenType>(chainData[1]);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const nativeBalance = useBalance({
     address,
   });
+
   const tokenBalance = useReadContract({
     abi,
-    address: "0x01368f47E2DA0F8259E6d9D23dA18e3CCec02a39",
+    address: xau_contract,
     functionName: "balanceOf",
-    args: [address || "0x0", BigInt(1)],
+    args: [address || "0x0"],
   });
-  const amountAInputRef = useRef<HTMLInputElement>(null);
 
   const { writeContract, isPending, data: hash } = useWriteContract();
+
+  const filteredTokens = chainData.filter(token =>
+    token.tokenName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    token.tokenSymbol.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const TokenSelector = ({ onSelect, selectedToken, title }: TokenSelectorProps) => {
+    const [localSearchQuery, setLocalSearchQuery] = useState("");
+    const localFilteredTokens = chainData.filter(token =>
+      token.tokenName.toLowerCase().includes(localSearchQuery.toLowerCase()) ||
+      token.tokenSymbol.toLowerCase().includes(localSearchQuery.toLowerCase())
+    );
+
+    return (
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="ghost" className="w-full justify-start p-2 hover:bg-gray-100/10 hover:text-gray-300">
+            <Image
+              className="rounded-full mr-2"
+              src={selectedToken.logoURI}
+              alt={selectedToken.tokenName}
+              width={32}
+              height={32}
+            />
+            <span>{selectedToken.tokenSymbol}</span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <div className="flex items-center border rounded-md p-2 mt-2" onClick={(e) => e.stopPropagation()}>
+              <Search className="w-4 h-4 mr-2" />
+              <input
+                type="text"
+                placeholder="Search tokens"
+                className="bg-transparent outline-none w-full"
+                value={localSearchQuery}
+                onChange={(e) => setLocalSearchQuery(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </DialogHeader>
+          <div className="max-h-[300px] overflow-y-auto">
+            {localFilteredTokens.map((token) => (
+              <Button
+                key={token.tokenSymbol}
+                variant="ghost"
+                className="w-full justify-start p-2 hover:bg-gray-100/10"
+                onClick={() => onSelect(token)}
+              >
+                <Image
+                  className="rounded-full mr-2"
+                  src={token.logoURI}
+                  alt={token.tokenName}
+                  width={32}
+                  height={32}
+                />
+                <div className="flex flex-col items-start">
+                  <span>{token.tokenSymbol}</span>
+                  <span className="text-sm text-gray-400">{token.tokenName}</span>
+                </div>
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
   useEffect(() => {
     const fetchPrices = async () => {
@@ -77,7 +179,6 @@ export const SwapForm: React.FC = () => {
     if (nativeBalance.data?.value) {
       setAmountA(formatUnits(nativeBalance.data?.value));
     }
-    console.log("Effect function");
     if (tokenBalance.data) {
       setAmountB(`${formatUnits(tokenBalance.data?.toString())}000000`);
     }
@@ -88,7 +189,10 @@ export const SwapForm: React.FC = () => {
 
     if (numericValue && +numericValue > 0) {
       setAmountAInput(numericValue);
-      setAmountBInput(((+numericValue * priceA) / priceB).toString());
+      setAmountBInput(((+numericValue * tokenAInput.price) / tokenBInput.price).toString());
+    } else {
+      setAmountAInput("");
+      setAmountBInput("");
     }
   };
 
@@ -97,27 +201,26 @@ export const SwapForm: React.FC = () => {
   }
 
   const swapHandler = (event: React.FormEvent<HTMLFormElement>) => {
+    console.log(+amountAInput > 0)
     event.preventDefault();
-    // Add your swap logic here
     if (+amountAInput > 0) {
-      if (tokenAInput.name === "METIS") {
+      console.log(tokenBInput.name)
+      if (tokenAInput.name === "Metis Token") {
         writeContract({
           abi,
-          address: "0x01368f47E2DA0F8259E6d9D23dA18e3CCec02a39",
-          functionName: "buy_gold",
+          address: xau_contract,
+          functionName: "buyGold",
           args: [],
           value: parseEther(amountAInput),
         });
-        console.log("buy gold", tokenAInput, amountAInput);
       }
       if (tokenAInput.name === "GOLD") {
         writeContract({
           abi,
-          address: "0x01368f47E2DA0F8259E6d9D23dA18e3CCec02a39",
-          functionName: "sell_gold",
+          address: xau_contract,
+          functionName: "sellGold",
           args: [parseEther(amountAInput)],
         });
-        console.log("Sell gold: ", tokenAInput, parseEther(amountAInput));
       }
     }
   };
@@ -127,189 +230,276 @@ export const SwapForm: React.FC = () => {
       hash,
     });
 
-  function clickHandler(
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ): void {
+  function clickHandler(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
     event.preventDefault();
 
-    // swap token input
+    // Swap selected tokens
+    const tempSelectedToken = selectedTokenA;
+    setSelectedTokenA(selectedTokenB);
+    setSelectedTokenB(tempSelectedToken);
+
+    // Swap token inputs
     const tempTokenInput = tokenAInput;
     setTokenAInput(tokenBInput);
     setTokenBInput(tempTokenInput);
 
-    // swap token amount/balance
+    // Swap balances
     const tempBalance = amountA;
     setAmountA(amountB);
     setAmountB(tempBalance);
 
-    // swap token price
+    // Swap prices
     const tempPrice = priceA;
     setPriceA(priceB);
     setPriceB(tempPrice);
 
-    // reset amount input
-    setAmountAInput("");
-    if (amountAInputRef.current) {
-      amountAInputRef.current.value = "";
+    // Swap input amounts if they exist
+    if (amountAInput && amountBInput) {
+      setAmountAInput(amountBInput);
+      setAmountBInput(amountAInput);
+      if (amountAInputRef.current) {
+        amountAInputRef.current.value = amountBInput;
+      }
+    } else {
+      setAmountAInput("");
+      setAmountBInput("");
+      if (amountAInputRef.current) {
+        amountAInputRef.current.value = "";
+      }
     }
-    setAmountBInput("");
   }
 
   return (
-    <>
-      <form onSubmit={swapHandler} className="">
-        <div className="space-y-2">
-          <div className="flex items-center gap-1">
-            <label className="text-sm text-gray-400 mb-1 block font-semibold">
-              From
-            </label>
-            <Image
-              className="dark:invert rounded-full"
-              src="https://s2.coinmarketcap.com/static/img/coins/64x64/9640.png"
-              alt="Next.js logo"
-              width={32}
-              height={32}
-            />
-            <span className="text-white bold">METIS</span>
-          </div>
-          <div className="space-y-2">
-            <div className="p-3 coin-input-text">
-              <div className="flex flex-col md:flex-row p-1">
-                <div className="md:w-1/2 items-center coin-input-text flex">
-                  <Image
-                    className="dark:invert rounded-full mr-1"
-                    src={tokenAInput.logo_url}
-                    alt={tokenAInput.name}
-                    width={32}
-                    height={32}
-                  />
-                  <span className="text-white bold">{tokenAInput.name}</span>
-                </div>
-                <div className="md:w-1/2 items-center p-1">
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    className="coin-input-22"
-                    onChange={amountInputAChange}
-                    step="any"
-                    max={amountA}
-                    min={0}
-                    ref={amountAInputRef}
-                  />
-                </div>
-              </div>
-              <div className="num-dollar p-1 flex items-center justify-between">
-                <div className="flex gap-1 items-center">
-                  <Image
-                    className="dark:invert mr-1"
-                    src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAoCAYAAABjPNNTAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGPSURBVHgB7ZixTsMwEIb/RB3oWLbABhsdmRm7MjKy9hl4AkZeAXiNjjAy0rHdYGzHdgv/CRfFLrFbKT07aj7plNhOpF/2+ew7oOOIyEIflGU54OOM1oceyyzLZptGr+4rirvkY0S7gD4fNL9IChRxIyRC7nZQ4A0SEihYM0mBp7AFrmlvtDkOz7huwF3uIe2k0n6iAy+hACeodsxd7mHlfa4lMIQrclB51ww5XnLPWGHCUHR6gfE7Cn3n8xu69M0ESVBfWCcOBx5gL3lsJhQ5ydECfCLXSASfT4ofPtPOoecCEqNv3U7vxqE/yGzOoIS5cW2JbL1PJkMnsilaITJ0LDYOd7CEtKLSNWUUWfn+URdJrmBfrB9pXpGdTzZFjOWWdPUvZ9rl9q8u0ojaKy3pfLIpfCKTTcSqvlKYYkF0XJFTp32fglB3d0t4kNNgU8WQkt+YQiVkLHB4/nUxS6ScoRT0ArsuI7fla0Rka+OY4uUrUk/EKPSTM/qF36WXJD1qLh4sRwsmQYrByiSD6fMDCC1lTEFX9xwAAAAASUVORK5CYII="
-                    alt="Next.js logo"
-                    width={16}
-                    height={20}
-                  />
-                  <p>Coin Value: {amountA ? amountA.slice(0, 6) : "0.0"}</p>{" "}
-                </div>
-                {/* Display the coin value */}
-                <div className="text-right">
-                  ${(+amountA * priceA).toFixed(2)}
-                </div>
-              </div>
+    <div className="w-full bg-[#171717] p-6 rounded-2xl">
+      <form onSubmit={swapHandler} className="space-y-4 rounded-lg">
+        <div className="flex items-center gap-1">
+          <label className="text-sm text-gray-400 mb-1 block font-semibold">
+            From
+          </label>
+          <Image
+            className="dark:invert rounded-full"
+            src={selectedTokenA.logoURI}
+            alt="Next.js logo"
+            width={32}
+            height={32}
+          />
+          <span className="text-white bold">{selectedTokenA.tokenSymbol}</span>
+        </div>
+        <div className="p-3 coin-input-text">
+          <div className="flex flex-col md:flex-row p-1">
+            <div className="md:w-1/2 items-center coin-input-text flex">
+              <Dialog>
+                {/* <DialogTrigger asChild>
+                  <div className="flex items-center cursor-pointer">
+                    <Image
+                      className="dark:invert rounded-full mr-1"
+                      src={tokenAInput.logo_url}
+                      alt={tokenAInput.name}
+                      width={32}
+                      height={32}
+                    />
+                    <span className="text-white bold">{tokenAInput.name}</span>
+                  </div>
+                </DialogTrigger> */}
+                <TokenSelector
+                  onSelect={(token) => {
+                    setSelectedTokenA(token);
+                    // Update tokenAInput if needed
+                    setTokenAInput({
+                      name: token.tokenName,
+                      logo_url: token.logoURI,
+                      unit: token.tokenSymbol,
+                      price: token.price
+                    });
+                  }}
+                  selectedToken={selectedTokenA}
+                  title="Select token to swap from"
+                />
+              </Dialog>
             </div>
-            <div className="flex justify-center -my-1.5">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 rounded-full bg-[#282e3a] swap"
-                onClick={clickHandler}
-              >
-                <ArrowDownUp className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="p-3 coin-input-text">
-              <div className="flex flex-col md:flex-row p-1">
-                <div className="md:w-1/2 items-center coin-input-text flex">
-                  <Image
-                    className="dark:invert rounded-full mr-1"
-                    src={tokenBInput.logo_url}
-                    alt={tokenBInput.name}
-                    width={32}
-                    height={32}
-                  />
-                  <span className="text-white font-medium">
-                    {tokenBInput.name}
-                  </span>
-                </div>
-                <div className="md:w-1/2 items-center p-1">
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    className="coin-input-22"
-                    readOnly
-                    value={amountBInput}
-                  />
-                </div>
-              </div>
-              <div className="num-dollar p-1 flex items-center justify-between">
-                <div className="flex gap-1 items-center">
-                  <Image
-                    className="dark:invert mr-1"
-                    src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAoCAYAAABjPNNTAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGPSURBVHgB7ZixTsMwEIb/RB3oWLbABhsdmRm7MjKy9hl4AkZeAXiNjjAy0rHdYGzHdgv/CRfFLrFbKT07aj7plNhOpF/2+ew7oOOIyEIflGU54OOM1oceyyzLZptGr+4rirvkY0S7gD4fNL9IChRxIyRC7nZQ4A0SEihYM0mBp7AFrmlvtDkOz7huwF3uIe2k0n6iAy+hACeodsxd7mHlfa4lMIQrclB51ww5XnLPWGHCUHR6gfE7Cn3n8xu69M0ESVBfWCcOBx5gL3lsJhQ5ydECfCLXSASfT4ofPtPOoecCEqNv3U7vxqE/yGzOoIS5cW2JbL1PJkMnsilaITJ0LDYOd7CEtKLSNWUUWfn+URdJrmBfrB9pXpGdTzZFjOWWdPUvZ9rl9q8u0ojaKy3pfLIpfCKTTcSqvlKYYkF0XJFTp32fglB3d0t4kNNgU8WQkt+YQiVkLHB4/nUxS6ScoRT0ArsuI7fla0Rka+OY4uUrUk/EKPSTM/qF36WXJD1qLh4sRwsmQYrByiSD6fMDCC1lTEFX9xwAAAAASUVORK5CYII="
-                    alt="Next.js logo"
-                    width={16}
-                    height={16}
-                  />
-                  <p>Coin Value: {amountB ? amountB.slice(0, 6) : "0.0"}</p>{" "}
-                </div>
-                {/* Display the coin value */}
-                <div className="text-right">
-                  ${(+amountB * priceB).toFixed(2)}
-                </div>
-              </div>
+            <div className="md:w-1/2 items-center p-1">
+              <Input
+                type="number"
+                placeholder="0"
+                className="coin-input-22"
+                onChange={amountInputAChange}
+                step="any"
+                max={amountA}
+                min={0}
+                ref={amountAInputRef}
+              />
             </div>
           </div>
-          <div className="space-y-1">
-            <div className="p-1 text-[#9B9B9B] swap text-xs flex items-center justify-between">
-              <div>
-                1 {tokenAInput.unit} ={" "}
-                {priceA && priceB ? (priceA / priceB).toFixed(5) : ""}{" "}
-                {tokenBInput.unit}
-                <span className="text-[#5e5e5e]"> (${priceB.toFixed(2)})</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Fuel width={14} height={14} />
-                <div>0.00025 METIS</div>
-              </div>
+          <div className="num-dollar p-1 flex items-center justify-between">
+            <div className="flex gap-1 items-center">
+              <Image
+                className="dark:invert mr-1"
+                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAoCAYAAABjPNNTAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGPSURBVHgB7ZixTsMwEIb/RB3oWLbABhsdmRm7MjKy9hl4AkZeAXiNjjAy0rHdYGzHdgv/CRfFLrFbKT07aj7plNhOpF/2+ew7oOOIyEIflGU54OOM1oceyyzLZptGr+4rirvkY0S7gD4fNL9IChRxIyRC7nZQ4A0SEihYM0mBp7AFrmlvtDkOz7huwF3uIe2k0n6iAy+hACeodsxd7mHlfa4lMIQrclB51ww5XnLPWGHCUHR6gfE7Cn3n8xu69M0ESVBfWCcOBx5gL3lsJhQ5ydECfCLXSASfT4ofPtPOoecCEqNv3U7vxqE/yGzOoIS5cW2JbL1PJkMnsilaITJ0LDYOd7CEtKLSNWUUWfn+URdJrmBfrB9pXpGdTzZFjOWWdPUvZ9rl9q8u0ojaKy3pfLIpfCKTTcSqvlKYYkF0XJFTp32fglB3d0t4kNNgU8WQkt+YQiVkLHB4/nUxS6ScoRT0ArsuI7fla0Rka+OY4uUrUk/EKPSTM/qF36WXJD1qLh4sRwsmQYrByiSD6fMDCC1lTEFX9xwAAAAASUVORK5CYII="
+                alt="Next.js logo"
+                width={16}
+                height={20}
+              />
+              <p>Coin Value: {amountA ? amountA.slice(0, 6) : "0.0"}</p>{" "}
             </div>
-            {isPending ? (
-              <Button
-                disabled
-                className="btn-grad h-[54px] w-full flex items-center justify-center"
-              >
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </Button>
-            ) : isConfirming ? (
-              <Button
-                disabled
-                className="btn-grad h-[54px] w-full flex items-center justify-center"
-              >
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Waiting for confirmation...
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                disabled={!isConnected}
-                className={`${
-                  isConnected && +amountAInput > 0 && "touch"
-                } btn-grad h-[54px] w-full flex items-center justify-center`}
-              >
-                {isConnected ? "Swap" : "Connect Wallet"}
-              </Button>
-            )}
+            {/* Display the coin value */}
+            <div className="text-right">
+              ${(+amountA * tokenAInput.price).toFixed(2)}
+            </div>
           </div>
         </div>
-        {/* <TokenSelect /> */}
+        <div className="flex justify-center -my-1.5">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 rounded-full bg-[#282e3a] swap"
+            onClick={clickHandler}
+          >
+            <ArrowDownUp className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="p-3 coin-input-text">
+          <div className="flex flex-col md:flex-row p-1">
+            <div className="md:w-1/2 items-center coin-input-text flex">
+              <Dialog>
+                <DialogTrigger asChild>
+                  {/* <div className="flex items-center cursor-pointer">
+                    <Image
+                      className="dark:invert rounded-full mr-1"
+                      src={tokenBInput.logo_url}
+                      alt={tokenBInput.name}
+                      width={32}
+                      height={32}
+                    />
+                    <span className="text-white font-medium">
+                      {tokenBInput.name}
+                    </span>
+                  </div> */}
+                </DialogTrigger>
+                <TokenSelector
+                  onSelect={(token) => {
+                    setSelectedTokenB(token);
+                    // Update tokenBInput if needed
+                    setTokenBInput({
+                      name: token.tokenName,
+                      logo_url: token.logoURI,
+                      unit: token.tokenSymbol,
+                      price: token.price
+                    });
+                  }}
+                  selectedToken={selectedTokenB}
+                  title="Select token to receive"
+                />
+              </Dialog>
+            </div>
+            <div className="md:w-1/2 items-center p-1">
+              <Input
+                type="number"
+                placeholder="0"
+                className="coin-input-22"
+                readOnly
+                value={amountBInput}
+              />
+            </div>
+          </div>
+          <div className="num-dollar p-1 flex items-center justify-between">
+            <div className="flex gap-1 items-center">
+              <Image
+                className="dark:invert mr-1"
+                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAoCAYAAABjPNNTAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGPSURBVHgB7ZixTsMwEIb/RB3oWLbABhsdmRm7MjKy9hl4AkZeAXiNjjAy0rHdYGzHdgv/CRfFLrFbKT07aj7plNhOpF/2+ew7oOOIyEIflGU54OOM1oceyyzLZptGr+4rirvkY0S7gD4fNL9IChRxIyRC7nZQ4A0SEihYM0mBp7AFrmlvtDkOz7huwF3uIe2k0n6iAy+hACeodsxd7mHlfa4lMIQrclB51ww5XnLPWGHCUHR6gfE7Cn3n8xu69M0ESVBfWCcOBx5gL3lsJhQ5ydECfCLXSASfT4ofPtPOoecCEqNv3U7vxqE/yGzOoIS5cW2JbL1PJkMnsilaITJ0LDYOd7CEtKLSNWUUWfn+URdJrmBfrB9pXpGdTzZFjOWWdPUvZ9rl9q8u0ojaKy3pfLIpfCKTTcSqvlKYYkF0XJFTp32fglB3d0t4kNNgU8WQkt+YQiVkLHB4/nUxS6ScoRT0ArsuI7fla0Rka+OY4uUrUk/EKPSTM/qF36WXJD1qLh4sRwsmQYrByiSD6fMDCC1lTEFX9xwAAAAASUVORK5CYII="
+                alt="Next.js logo"
+                width={16}
+                height={16}
+              />
+              <p>Coin Value: {amountB ? amountB.slice(0, 6) : "0.0"}</p>{" "}
+            </div>
+            {/* Display the coin value */}
+            <div className="text-right">
+              ${(+amountB * priceB).toFixed(2)}
+            </div>
+          </div>
+        </div>
+
+
+        {/* <div className="w-full bg-[#1E2026] rounded-lg p-4">
+          <TokenSelector
+            onSelect={setSelectedTokenA}
+            selectedToken={selectedTokenA}
+            title="Select token to swap from"
+          />
+          <Input
+            type="text"
+            placeholder="0.0"
+            className="bg-transparent border-transparent text-2xl mt-2 p-0"
+            ref={amountAInputRef}
+            onChange={amountInputAChange}
+            value={amountAInput}
+          />
+        </div>
+
+        <div className="flex justify-center -my-2">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 rounded-full bg-[#282E3A]"
+            onClick={clickHandler}
+          >
+            <ArrowDownUp className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="w-full bg-[#1E2026] rounded-lg p-4">
+          <TokenSelector
+            onSelect={setSelectedTokenB}
+            selectedToken={selectedTokenB}
+            title="Select token to receive"
+          />
+          <Input
+            type="text"
+            placeholder="0.0"
+            className="bg-transparent border-transparent active:border-transparent text-2xl mt-2 p-0"
+            value={amountBInput}
+            readOnly
+          />
+        </div> */}
+
+        <div className="p-1 text-[#9B9B9B] swap text-xs flex items-center justify-between">
+          <div>
+            1 {tokenAInput.unit} ={" "}
+            {tokenAInput.price && tokenBInput.price ? (tokenAInput.price / tokenBInput.price).toFixed(5) : ""}{" "}
+            {tokenBInput.unit}
+            <span className="text-[#5e5e5e]"> (${tokenBInput.price.toFixed(2)})</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Fuel width={14} height={14} />
+            <div>0.00025 METIS</div>
+          </div>
+        </div>
+        {isPending ? (
+          <Button
+            disabled
+            className="btn-grad h-[54px] w-full flex items-center justify-center"
+          >
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Please wait
+          </Button>
+        ) : isConfirming ? (
+          <Button
+            disabled
+            className="btn-grad h-[54px] w-full flex items-center justify-center"
+          >
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Waiting for confirmation...
+          </Button>
+        ) : (
+          <Button
+            type="submit"
+            disabled={!isConnected}
+            className={`${isConnected && +amountAInput > 0 && "touch"
+              } btn-grad h-[54px] w-full flex items-center justify-center`}
+          >
+            {isConnected ? "Swap" : "Connect Wallet"}
+          </Button>
+        )}
       </form>
       {isConfirmed && (
         <div className="mt-2 text-white text-xs">
@@ -326,6 +516,6 @@ export const SwapForm: React.FC = () => {
           </span>
         </div>
       )}
-    </>
+    </div>
   );
 };

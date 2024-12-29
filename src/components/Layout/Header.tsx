@@ -1,5 +1,5 @@
 'use client'
-
+/* eslint-disable */
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,9 +30,10 @@ export function Header() {
   const navigation = [
     { name: "Mint", href: "/" },
     { name: "Stake", href: "/stake" },
-    { name: "Withdraw", href: "/withdraw" },
+    // { name: "Withdraw", href: "/withdraw" },
     { name: "Rewards", href: "/rewards" },
     { name: "Ecosystem", href: "/ecosystem" },
+    { name: "Earn", href: "/earn" },
   ]
 
   const earnMenuItems = [
@@ -103,7 +104,7 @@ export function Header() {
             <Image
               src="/leofi_logo.png"
               alt="Logo"
-              width={32}
+              width={64}
               height={32}
               className="h-6 w-auto"
             />
@@ -125,7 +126,7 @@ export function Header() {
             </Link>
           ))}
 
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium text-gray-400 hover:text-white">
               <span>Earn</span>
               <ChevronDown className="h-4 w-4" />
@@ -137,7 +138,7 @@ export function Header() {
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
         </nav>
 
         {/* Right Side: Wallet Connection */}

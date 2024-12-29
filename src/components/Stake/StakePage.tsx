@@ -24,19 +24,19 @@ export default function StakingCard() {
 
             {/* Stats Grid */}
             <div className="grid gap-4 md:grid-cols-3">
-              <Card className="bg-slate-900/50 bg-[#2B2B31]">
+              <Card className="bg-slate-900/50 bg-[#2B2B31] border-[#FF8100]">
                 <div className="p-6">
                   <h3 className="text-sm font-medium text-gray-400">{process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME} SUPPLY</h3>
                   <div className="mt-2 text-2xl font-bold text-white">19,409,935.1507</div>
                 </div>
               </Card>
-              <Card className="bg-slate-900/50 bg-[#2B2B31]">
+              <Card className="bg-slate-900/50 bg-[#2B2B31] border-[#FF8100]">
                 <div className="p-6">
                   <h3 className="text-sm font-medium text-gray-400">ESTIMATED APR</h3>
                   <div className="mt-2 text-2xl font-bold text-white">8.70%</div>
                 </div>
               </Card>
-              <Card className="bg-slate-900/50 bg-[#2B2B31]">
+              <Card className="bg-slate-900/50 bg-[#2B2B31] border-[#FF8100]">
                 <div className="p-6">
                   <h3 className="text-sm font-medium text-gray-400">{process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME} Price</h3>
                   <div className="mt-2 text-2xl font-bold text-white">1.1077 {process.env.NEXT_PUBLIC_TOKEN_NAME}</div>
