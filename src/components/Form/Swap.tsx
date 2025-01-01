@@ -180,7 +180,7 @@ export const SwapForm: React.FC = () => {
       setAmountA(formatUnits(nativeBalance.data?.value));
     }
     if (tokenBalance.data) {
-      setAmountB(`${formatUnits(tokenBalance.data?.toString())}000000`);
+      setAmountB(`${formatUnits(tokenBalance.data?.toString())}`);
     }
   }, [address, nativeBalance.data?.value, tokenBalance.data]);
 
@@ -289,18 +289,6 @@ export const SwapForm: React.FC = () => {
           <div className="flex flex-col md:flex-row p-1">
             <div className="md:w-1/2 items-center coin-input-text flex">
               <Dialog>
-                {/* <DialogTrigger asChild>
-                  <div className="flex items-center cursor-pointer">
-                    <Image
-                      className="dark:invert rounded-full mr-1"
-                      src={tokenAInput.logo_url}
-                      alt={tokenAInput.name}
-                      width={32}
-                      height={32}
-                    />
-                    <span className="text-white bold">{tokenAInput.name}</span>
-                  </div>
-                </DialogTrigger> */}
                 <TokenSelector
                   onSelect={(token) => {
                     setSelectedTokenA(token);
@@ -362,18 +350,6 @@ export const SwapForm: React.FC = () => {
             <div className="md:w-1/2 items-center coin-input-text flex">
               <Dialog>
                 <DialogTrigger asChild>
-                  {/* <div className="flex items-center cursor-pointer">
-                    <Image
-                      className="dark:invert rounded-full mr-1"
-                      src={tokenBInput.logo_url}
-                      alt={tokenBInput.name}
-                      width={32}
-                      height={32}
-                    />
-                    <span className="text-white font-medium">
-                      {tokenBInput.name}
-                    </span>
-                  </div> */}
                 </DialogTrigger>
                 <TokenSelector
                   onSelect={(token) => {
@@ -418,50 +394,6 @@ export const SwapForm: React.FC = () => {
             </div>
           </div>
         </div>
-
-
-        {/* <div className="w-full bg-[#1E2026] rounded-lg p-4">
-          <TokenSelector
-            onSelect={setSelectedTokenA}
-            selectedToken={selectedTokenA}
-            title="Select token to swap from"
-          />
-          <Input
-            type="text"
-            placeholder="0.0"
-            className="bg-transparent border-transparent text-2xl mt-2 p-0"
-            ref={amountAInputRef}
-            onChange={amountInputAChange}
-            value={amountAInput}
-          />
-        </div>
-
-        <div className="flex justify-center -my-2">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 rounded-full bg-[#282E3A]"
-            onClick={clickHandler}
-          >
-            <ArrowDownUp className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="w-full bg-[#1E2026] rounded-lg p-4">
-          <TokenSelector
-            onSelect={setSelectedTokenB}
-            selectedToken={selectedTokenB}
-            title="Select token to receive"
-          />
-          <Input
-            type="text"
-            placeholder="0.0"
-            className="bg-transparent border-transparent active:border-transparent text-2xl mt-2 p-0"
-            value={amountBInput}
-            readOnly
-          />
-        </div> */}
-
         <div className="p-1 text-[#9B9B9B] swap text-xs flex items-center justify-between">
           <div>
             1 {tokenAInput.unit} ={" "}

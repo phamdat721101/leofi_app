@@ -8,12 +8,12 @@ import { useAccount, useReadContract } from 'wagmi';
 import { useEffect, useState } from "react"
 
 export default function StakingCard() {
-  const gold_contract = process.env.NEXT_PUBLIC_LPTOKEN_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
+  const lp_contract = process.env.NEXT_PUBLIC_LPTOKEN_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
   const { isConnected, address } = useAccount();
   const [lpToken, setLptoken] = useState(0);
   const balanceOf = useReadContract({
     abi: abi,
-    address: gold_contract,
+    address: lp_contract,
     functionName: "balanceOf",
     args: [address || "0x0"],
   });
