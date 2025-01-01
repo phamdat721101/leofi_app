@@ -32,11 +32,11 @@ const transactions = [
     id: "1",
     type: "Stake",
     tokenFrom: {
-      symbol: "DGOLD",
+      symbol: process.env.NEXT_PUBLIC_TOKEN_NAME as string,
       logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
     },
     tokenTo: {
-        symbol: "stDGOLD",
+        symbol: process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME as string,
         logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
     },
     amount: "0.5 DGOLD",
@@ -47,11 +47,11 @@ const transactions = [
     id: "2",
     type: "Unstake",
     tokenFrom: {
-        symbol: "stDGOLD",
+        symbol: process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME as string,
         logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
     },
     tokenTo: {
-      symbol: "DGOLD",
+      symbol: process.env.NEXT_PUBLIC_TOKEN_NAME as string,
       logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
     },
     amount: "0.5 stDGOLD",
@@ -62,11 +62,11 @@ const transactions = [
     id: "3",
     type: "Stake",
     tokenFrom: {
-      symbol: "DGOLD",
+      symbol: process.env.NEXT_PUBLIC_TOKEN_NAME as string,
       logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
     },
     tokenTo: {
-        symbol: "stDGOLD",
+        symbol: process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME as string,
         logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
     },
     amount: "2 DGOLD",

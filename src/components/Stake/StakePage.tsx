@@ -1,9 +1,27 @@
 'use client'
-
+/* eslint-disable */
 import { Card } from "@/components/ui/card"
 import StakeCard from "./Stake"
 import History from "./StakeHistory"
+import { abi } from '@/abi/abi'
+import { useAccount, useReadContract } from 'wagmi';
+import { useEffect, useState } from "react"
+
 export default function StakingCard() {
+  const gold_contract = process.env.NEXT_PUBLIC_LPTOKEN_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
+  const { isConnected, address } = useAccount();
+  const [lpToken, setLptoken] = useState(0);
+  const balanceOf = useReadContract({
+    abi: abi,
+    address: gold_contract,
+    functionName: "balanceOf",
+    args: [address || "0x0"],
+  });
+
+  useEffect(() => {
+    setLptoken(parseFloat(balanceOf?.data?.toString() ?? "0") / (10 ** 18));
+  }, [address, balanceOf])
+
   return (
     <div className="min-h-screen">
       <div className="mx-auto max-w-6xl">
@@ -15,9 +33,9 @@ export default function StakingCard() {
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold text-white">My stake</h2>
               </div>
-              
+
               <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-5xl font-bold bg-text-grad">0.00</span>
+                <span className="text-5xl font-bold bg-text-grad">{lpToken}</span>
                 <span className="text-xl text-white">{process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME}</span>
               </div>
               <div className="text-sm text-gray-400">$ 0.00</div>
