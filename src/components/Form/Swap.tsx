@@ -205,7 +205,7 @@ export const SwapForm: React.FC = () => {
     event.preventDefault();
     if (+amountAInput > 0) {
       console.log(tokenBInput.name)
-      if (tokenAInput.name === "Metis Token") {
+      if (tokenAInput.name === "METIS") {
         writeContract({
           abi,
           address: xau_contract,

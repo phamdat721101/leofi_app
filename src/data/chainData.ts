@@ -1,7 +1,7 @@
 export const chainData =[
   {
     tokenSymbol: "METIS",
-    tokenName: "Metis Token",
+    tokenName: "METIS",
     contractAddress: "native",
     decimals: 18,
     chainId: 1088,
@@ -10,7 +10,7 @@ export const chainData =[
   },
   {
     tokenSymbol: "DGOLD",
-    tokenName: "Gold Token",
+    tokenName: "GOLD",
     contractAddress: "native",
     decimals: 18,
     chainId: 1088,
