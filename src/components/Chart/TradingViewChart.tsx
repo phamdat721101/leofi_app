@@ -190,7 +190,7 @@ export default function Chart(): JSX.Element {
     symbolLabel.style.color = TOOLTIP_CONFIG.COLORS.TEXT.WHITE;
     symbolLabel.style.fontSize = "16px";
     symbolLabel.style.fontWeight = "bold";
-    symbolLabel.textContent = "DGOLD";
+    symbolLabel.textContent = "MANTA";
     symbolLabelRef.current = symbolLabel;
     chartContainerRef.current.appendChild(symbolLabel);
 

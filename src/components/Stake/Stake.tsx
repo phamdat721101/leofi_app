@@ -92,6 +92,16 @@ export default function StakeCard() {
 
   const handleStake = async () => {
     try {
+      writeContract({
+        abi: abi,
+        address: gold_contract,
+        functionName: "approve",
+        args: [stake_contract, BigInt(1000000000000000000000000000000000000000000000)]
+      });
+    } catch (error) {
+      console.error("Approve failed: ", error)
+    }
+    try {
       if (activeTab == "Stake") {
         writeContract({
           abi: stake_abi,
@@ -269,7 +279,7 @@ export default function StakeCard() {
                       <span>
                         Hash:{" "}
                         <Link
-                          href={`https://sepolia-explorer.metisdevops.link/tx/${hash}`}
+                          href={`https://scanv2-testnet.ancient8.gg/tx/${hash}`}
                           className="font-bold"
                           target="_blank"
                         >

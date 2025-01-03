@@ -1,4 +1,6 @@
-import { useState } from "react";
+'use client'
+/* eslint-disable */
+import { useEffect, useState } from "react";
 import { ArrowRightLeft, Coins, ExternalLink } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -25,22 +27,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Image from "next/image";
-
+import { useAccount } from 'wagmi';
+import Link from "next/link";
 // Mock data for demonstration
 const transactions = [
   {
     id: "1",
     type: "Sell",
     tokenFrom: {
-      symbol: "GOLD",
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
+      symbol: "MANTA",
+      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/13631.png",
     },
     tokenTo: {
-      symbol: "METIS",
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/9640.png",
+      symbol: "ETH",
+      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
     },
-    amount: "0.5 GOLD",
-    amountTo: "750 METIS",
+    amount: "0.5 MANTA",
+    amountTo: "750 ETH",
     date: "2023-05-10T14:30:00Z",
     status: "Completed",
   },
@@ -48,15 +51,15 @@ const transactions = [
     id: "2",
     type: "Buy",
     tokenFrom: {
-      symbol: "METIS",
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/9640.png",
+      symbol: "ETH",
+      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
     },
     tokenTo: {
-      symbol: "GOLD",
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
+      symbol: "MANTA",
+      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/13631.png",
     },
-    amount: "100 METIS",
-    amountTo: "25 GOLD",
+    amount: "100 ETH",
+    amountTo: "25 MANTA",
     date: "2023-05-09T10:15:00Z",
     status: "Completed",
   },
@@ -64,15 +67,15 @@ const transactions = [
     id: "3",
     type: "Sell",
     tokenFrom: {
-      symbol: "GOLD",
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
+      symbol: "MANTA",
+      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/13631.png",
     },
     tokenTo: {
-      symbol: "METIS",
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/9640.png",
+      symbol: "ETH",
+      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
     },
-    amount: "2 GOLD",
-    amountTo: "100 METIS",
+    amount: "2 MANTA",
+    amountTo: "100 ETH",
     date: "2023-05-08T18:45:00Z",
     status: "Completed",
   },
@@ -80,11 +83,44 @@ const transactions = [
 
 export default function History() {
   const [filter, setFilter] = useState("all");
-
-  const filteredTransactions = transactions.filter((tx) => {
+  const { address } = useAccount();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const MetisToken = {
+    symbol: "METIS",
+    logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/9640.png",
+  }
+  const DGoldToken = {
+    symbol: "DGOLD",
+    logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
+  }
+  const filteredTransactions = data.filter((tx:any) => {
     if (filter === "all") return true;
     return tx.type.toLowerCase() === filter;
   });
+
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const API_URL = `${process.env.NEXT_PUBLIC_BACK_END_ADDRESS}/v1/token/txs?addr=${address}`;
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch: ${res.status}`);
+        }
+        const result = await res.json();
+        setData(result);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [address]);
 
   return (
     <Card className="p-0 w-full bg-transparent	border-0">
@@ -112,18 +148,18 @@ export default function History() {
             <TableRow>
               <TableHead className="text-white">Type</TableHead>
               <TableHead className="text-white">Assets</TableHead>
-              <TableHead className="text-white">Amount</TableHead>
+              {/* <TableHead className="text-white">Amount</TableHead> */}
               <TableHead className="text-white">Date</TableHead>
               <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-right text-white">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTransactions.map((tx) => (
-              <TableRow key={tx.id}>
+            {filteredTransactions.map((tx: any) => (
+              <TableRow key={tx.tx_hash}>
                 <TableCell>
-                  <Badge variant={tx.type === "Sell" ? "secondary" : "default"}>
-                    {tx.type === "Sell" ? (
+                  <Badge variant={tx.type === "sell" ? "secondary" : "default"}>
+                    {tx.type === "sell" ? (
                       <ArrowRightLeft className="w-4 h-4 mr-1" />
                     ) : (
                       <Coins className="w-4 h-4 mr-1" />
@@ -133,49 +169,84 @@ export default function History() {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-2 text-white">
-                    <Avatar className="w-6 h-6">
-                      <Image
-                        src={tx.tokenFrom.logo_url}
-                        alt={tx.tokenFrom.symbol}
-                        width={40}
-                        height={40}
-                      />
-                    </Avatar>
-                    <span>{tx.tokenFrom.symbol}</span>
-                    <ArrowRightLeft className="w-4 h-4" />
-                    <Avatar className="w-6 h-6">
-                      <Image
-                        src={tx.tokenTo.logo_url}
-                        alt={tx.tokenTo.symbol}
-                        width={40}
-                        height={40}
-                      />
-                    </Avatar>
-                    <span>{tx.tokenTo.symbol}</span>
+                    {tx.type === "sell" ? (
+                      <>
+                        <Avatar className="w-6 h-6">
+                          <Image
+                            src={DGoldToken.logo_url}
+                            alt={DGoldToken.symbol}
+                            width={40}
+                            height={40}
+                          />
+                        </Avatar>
+                        <span>{DGoldToken.symbol}</span>
+                        <ArrowRightLeft className="w-4 h-4" />
+                        <Avatar className="w-6 h-6">
+                          <Image
+                            src={MetisToken.logo_url}
+                            alt={MetisToken.symbol}
+                            width={40}
+                            height={40}
+                          />
+                        </Avatar>
+                        <span>{MetisToken.symbol}</span>
+                      </>
+
+                    ) : (
+                      <>
+                        <Avatar className="w-6 h-6">
+                          <Image
+                            src={MetisToken.logo_url}
+                            alt={MetisToken.symbol}
+                            width={40}
+                            height={40}
+                          />
+                        </Avatar>
+                        <span>{MetisToken.symbol}</span>
+                        <ArrowRightLeft className="w-4 h-4" />
+                        <Avatar className="w-6 h-6">
+                          <Image
+                            src={DGoldToken.logo_url}
+                            alt={DGoldToken.symbol}
+                            width={40}
+                            height={40}
+                          />
+                        </Avatar>
+                        <span>{DGoldToken.symbol}</span>
+                      </>
+                    )}
                   </div>
                 </TableCell>
-                <TableCell className="text-white">
+                {/* <TableCell className="text-white">
                   {tx.amount}
                   <br />
                   <span className="text-sm text-[#9B9B9B]">{tx.amountTo}</span>
-                </TableCell>
+                </TableCell> */}
                 <TableCell className="text-white">
-                  {new Date(tx.date).toLocaleString()}
+                  {new Date(tx.timestamp).toLocaleString()}
                 </TableCell>
                 <TableCell>
                   <Badge
-                    variant={
-                      tx.status === "Completed" ? "default" : "destructive"
-                    }
+                    variant="default"
                   >
-                    {tx.status}
+                    Completed
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right text-white">
-                  <Button variant="ghost" size="sm">
+                  <Link
+                    href={`https://sepolia-explorer.metisdevops.link/tx/${tx.tx_hash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="ghost" size="sm">
+                      <ExternalLink className="w-4 h-4 mr-1" />
+                      View
+                    </Button>
+                  </Link>
+                  {/* <Button variant="ghost" size="sm" onClick={ }>
                     <ExternalLink className="w-4 h-4 mr-1" />
                     View
-                  </Button>
+                  </Button> */}
                 </TableCell>
               </TableRow>
             ))}

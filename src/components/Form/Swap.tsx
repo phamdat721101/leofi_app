@@ -439,7 +439,7 @@ export const SwapForm: React.FC = () => {
           <span>
             Hash:{" "}
             <Link
-              href={`https://sepolia-explorer.metisdevops.link/tx/${hash}`}
+              href={`https://scanv2-testnet.ancient8.gg/tx/${hash}`}
               className="font-bold"
               target="_blank"
             >

@@ -39,8 +39,30 @@ const metisSepolia = defineChain({
   },
 });
 
+const ancientTestnet = defineChain({
+  id: 28122024,
+  name: 'Ancient Testnet',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ancient Testnet',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: { http: ['https://rpcv2-testnet.ancient8.gg/'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Ancient Testnet Explorer',
+      url: 'https://scanv2-testnet.ancient8.gg/',
+      apiUrl: 'https://scanv2-testnet.ancient8.gg/api',
+    },
+  },
+  contracts: {
+  },
+});
+
 // Create wagmiConfig
-const chains = [mainnet, sepolia, metisSepolia] as const
+const chains = [mainnet, sepolia, metisSepolia, ancientTestnet] as const
 export const config = defaultWagmiConfig({
   chains,
   projectId,

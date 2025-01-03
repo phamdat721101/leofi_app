@@ -18,6 +18,15 @@ export const chainData =[
     price:2611.17
   },
   {
+    tokenSymbol: "ETH",
+    tokenName: "Ethereum",
+    contractAddress: "native",
+    decimals: 18,
+    chainId: 1,
+    logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
+    price:3480
+  },
+  {
     tokenSymbol: "SEI",
     tokenName: "Sei Token",
     contractAddress: "native",
@@ -43,5 +52,14 @@ export const chainData =[
     chainId: 137,
     logoURI: "/honey-logo.png",
     price:0.4283   
-  }  
+  }, 
+  {
+    tokenSymbol: "MANTA",
+    tokenName: "MANTA",
+    contractAddress: "native",
+    decimals: 18,
+    chainId: 1088,
+    logoURI:"https://s2.coinmarketcap.com/static/img/coins/64x64/13631.png",
+    price:2611.17
+  }
 ] as const;
