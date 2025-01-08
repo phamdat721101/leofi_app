@@ -19,6 +19,24 @@ export const chainData =[
   },
   {
     tokenSymbol: "ETH",
+    tokenName: "Base",
+    contractAddress: "native",
+    decimals: 18,
+    chainId: 1,
+    logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/9195.png",
+    price:3480
+  },
+  {
+    tokenSymbol: "vETH",
+    tokenName: "Ethereum",
+    contractAddress: "native",
+    decimals: 18,
+    chainId: 1,
+    logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
+    price:3480
+  },
+  {
+    tokenSymbol: "ETH",
     tokenName: "Ethereum",
     contractAddress: "native",
     decimals: 18,

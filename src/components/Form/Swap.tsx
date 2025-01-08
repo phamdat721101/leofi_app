@@ -12,7 +12,7 @@ import {
   useWriteContract,
   useSwitchChain
 } from "wagmi";
-import { formatUnits, parseEther } from "ethers";
+import { formatUnits, parseEther, parseUnits } from "ethers";
 import { abi } from "@/abi/abi";
 import { Button } from "../ui/button";
 import { ArrowDownUp, Search, Loader2, Fuel } from "lucide-react";
@@ -26,6 +26,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { chainData } from "@/data/chainData";
+import { base_splx_abi } from '@/abi/base_slpx_abi'
+require('dotenv').config();
 
 type TokenType = {
   tokenSymbol: string;
@@ -43,9 +45,6 @@ interface TokenSelectorProps {
   title: string;
 }
 
-let xau_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
-let explorer_url = "https://scanv2-testnet.ancient8.gg"
-
 export const SwapForm: React.FC = () => {
   const [tokenAInput, setTokenAInput] = useState<Token>({
     name: "METIS",
@@ -59,6 +58,11 @@ export const SwapForm: React.FC = () => {
     unit: "Ounce",
     price: 2611.17
   });
+
+  let xau_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
+  let base_contract = '0xFa0EeA22012ceAE7188547995f4c8cfC2F233ba7' as `0x${string}`
+  let explorer_url = "https://scanv2-testnet.ancient8.gg"
+
   const [amountAInput, setAmountAInput] = useState("");
   const [amountBInput, setAmountBInput] = useState("");
   const [amountA, setAmountA] = useState("");
@@ -73,12 +77,20 @@ export const SwapForm: React.FC = () => {
   const { chains, switchChain } = useSwitchChain()
   console.log("Chain connected: ", chains)
   chains.map((chain) =>{
-    if(chain.id == 11155931){
-      xau_contract = process.env.RISE_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
-      explorer_url = "https://testnet-explorer.riselabs.xyz"
-    }else{
-      explorer_url = "https://sepolia-explorer.metisdevops.link"
+    switch (chain.id) {
+      case 11155931:
+        xau_contract = '0xA1F002bf7cAD148a639418D77b93912871901875'
+        explorer_url = "https://testnet-explorer.riselabs.xyz"
+        console.log("Xau Rise contract: ", xau_contract, " -rise: ", process.env.NEXT_RISE_PUBLIC_XAU_CONTRACT)
+        break;
+      case 84532:
+        explorer_url = "	https://sepolia-explorer.base.org"
+        break;
+      default:
+        explorer_url = "https://sepolia-explorer.metisdevops.link"
+        break;
     }
+
   })
 
   const nativeBalance = useBalance({
@@ -224,6 +236,15 @@ export const SwapForm: React.FC = () => {
           functionName: "buyGold",
           args: [],
           value: parseEther(amountAInput),
+        });
+      }
+      if( tokenAInput.name === "Base") {
+        writeContract({
+          abi: base_splx_abi,
+          address: base_contract,
+          functionName: "mint",
+          args: [address as `0x${string}`, parseUnits("1000000000000000000", 18)],
+          // value: parseEther(amountAInput) as bigint,
         });
       }
       if (tokenAInput.name === "GOLD") {

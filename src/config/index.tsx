@@ -1,7 +1,7 @@
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
 
 import { cookieStorage, createStorage } from 'wagmi'
-import { mainnet, sepolia } from 'wagmi/chains'
+import { mainnet, sepolia, baseSepolia, baseGoerli } from 'wagmi/chains'
 import { defineChain } from 'viem'
 
 
@@ -84,7 +84,7 @@ const riseTestnet = defineChain({
 });
 
 // Create wagmiConfig
-const chains = [mainnet, sepolia, metisSepolia, ancientTestnet, riseTestnet] as const
+const chains = [mainnet, sepolia, metisSepolia, ancientTestnet, riseTestnet, baseSepolia] as const
 export const config = defaultWagmiConfig({
   chains,
   projectId,
