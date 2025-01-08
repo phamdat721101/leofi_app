@@ -10,6 +10,7 @@ import {
   useReadContract,
   useWaitForTransactionReceipt,
   useWriteContract,
+  useSwitchChain
 } from "wagmi";
 import { formatUnits, parseEther } from "ethers";
 import { abi } from "@/abi/abi";
@@ -42,7 +43,8 @@ interface TokenSelectorProps {
   title: string;
 }
 
-const xau_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
+let xau_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
+let explorer_url = "https://scanv2-testnet.ancient8.gg"
 
 export const SwapForm: React.FC = () => {
   const [tokenAInput, setTokenAInput] = useState<Token>({
@@ -68,6 +70,16 @@ export const SwapForm: React.FC = () => {
   const [selectedTokenA, setSelectedTokenA] = useState<TokenType>(chainData[0]);
   const [selectedTokenB, setSelectedTokenB] = useState<TokenType>(chainData[1]);
   const [searchQuery, setSearchQuery] = useState("");
+  const { chains, switchChain } = useSwitchChain()
+  console.log("Chain connected: ", chains)
+  chains.map((chain) =>{
+    if(chain.id == 11155931){
+      xau_contract = process.env.RISE_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
+      explorer_url = "https://testnet-explorer.riselabs.xyz"
+    }else{
+      explorer_url = "https://sepolia-explorer.metisdevops.link"
+    }
+  })
 
   const nativeBalance = useBalance({
     address,
@@ -205,7 +217,7 @@ export const SwapForm: React.FC = () => {
     event.preventDefault();
     if (+amountAInput > 0) {
       console.log(tokenBInput.name)
-      if (tokenAInput.name === "METIS") {
+      if (tokenAInput.name === "METIS" || tokenAInput.name === "Ethereum") {
         writeContract({
           abi,
           address: xau_contract,
@@ -439,7 +451,7 @@ export const SwapForm: React.FC = () => {
           <span>
             Hash:{" "}
             <Link
-              href={`https://scanv2-testnet.ancient8.gg/tx/${hash}`}
+              href={`${explorer_url}/tx/${hash}`}
               className="font-bold"
               target="_blank"
             >

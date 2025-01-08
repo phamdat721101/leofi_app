@@ -61,8 +61,30 @@ const ancientTestnet = defineChain({
   },
 });
 
+const riseTestnet = defineChain({
+  id: 11155931,
+  name: 'Rise Testnet',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Rise Testnet',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: { http: ['https://testnet.riselabs.xyz'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Rise Testnet Explorer',
+      url: 'https://testnet-explorer.riselabs.xyz',
+      apiUrl: 'https://testnet-explorer.riselabs.xyz/api',
+    },
+  },
+  contracts: {
+  },
+});
+
 // Create wagmiConfig
-const chains = [mainnet, sepolia, metisSepolia, ancientTestnet] as const
+const chains = [mainnet, sepolia, metisSepolia, ancientTestnet, riseTestnet] as const
 export const config = defaultWagmiConfig({
   chains,
   projectId,
