@@ -80,11 +80,11 @@ export const SwapForm: React.FC = () => {
     switch (chain.id) {
       case 11155931:
         xau_contract = '0xA1F002bf7cAD148a639418D77b93912871901875'
-        explorer_url = "https://testnet-explorer.riselabs.xyz"
+        // explorer_url = "https://testnet-explorer.riselabs.xyz"
         console.log("Xau Rise contract: ", xau_contract, " -rise: ", process.env.NEXT_RISE_PUBLIC_XAU_CONTRACT)
         break;
       case 84532:
-        explorer_url = "	https://sepolia-explorer.base.org"
+        // explorer_url = "https://sepolia-explorer.base.org"
         break;
       default:
         explorer_url = "https://sepolia-explorer.metisdevops.link"
@@ -229,16 +229,44 @@ export const SwapForm: React.FC = () => {
     event.preventDefault();
     if (+amountAInput > 0) {
       console.log(tokenBInput.name)
-      if (tokenAInput.name === "METIS" || tokenAInput.name === "Ethereum") {
-        writeContract({
-          abi,
-          address: xau_contract,
-          functionName: "buyGold",
-          args: [],
-          value: parseEther(amountAInput),
-        });
+      switch (tokenAInput.name) {
+        case "METIS":
+          explorer_url = "https://sepolia-explorer.metisdevops.link"
+          xau_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
+          writeContract({
+            abi,
+            address: xau_contract,
+            functionName: "buyGold",
+            args: [],
+            value: parseEther(amountAInput),
+          });
+          break;
+        case "Ethereum":
+          explorer_url = "https://testnet-explorer.riselabs.xyz"
+          xau_contract = "0xA1F002bf7cAD148a639418D77b93912871901875" as `0x${string}`
+          writeContract({
+            abi,
+            address: xau_contract,
+            functionName: "buyGold",
+            args: [],
+            value: parseEther(amountAInput),
+          });
+          break;
+        default:
+          explorer_url = "https://sepolia-explorer.metisdevops.link"
+          xau_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
+          writeContract({
+            abi,
+            address: xau_contract,
+            functionName: "buyGold",
+            args: [],
+            value: parseEther(amountAInput),
+          });
+          break;
       }
+
       if( tokenAInput.name === "Base") {
+        explorer_url = "	https://sepolia-explorer.base.org"
         writeContract({
           abi: base_splx_abi,
           address: base_contract,

@@ -279,7 +279,7 @@ export default function StakeCard() {
                       <span>
                         Hash:{" "}
                         <Link
-                          href={`https://scanv2-testnet.ancient8.gg/tx/${hash}`}
+                          href={`https://sepolia-explorer.metisdevops.link/tx/${hash}`}
                           className="font-bold"
                           target="_blank"
                         >
