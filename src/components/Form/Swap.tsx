@@ -61,8 +61,8 @@ export const SwapForm: React.FC = () => {
 
   let xau_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
   let base_contract = '0xFa0EeA22012ceAE7188547995f4c8cfC2F233ba7' as `0x${string}`
-  let explorer_url = "https://scanv2-testnet.ancient8.gg"
 
+  const [explorer_url, setExplorerUrl] = useState(""); 
   const [amountAInput, setAmountAInput] = useState("");
   const [amountBInput, setAmountBInput] = useState("");
   const [amountA, setAmountA] = useState("");
@@ -231,7 +231,7 @@ export const SwapForm: React.FC = () => {
       console.log(tokenBInput.name)
       switch (tokenAInput.name) {
         case "METIS":
-          explorer_url = "https://sepolia-explorer.metisdevops.link"
+          setExplorerUrl("https://sepolia-explorer.metisdevops.link")
           xau_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
           writeContract({
             abi,
@@ -242,7 +242,7 @@ export const SwapForm: React.FC = () => {
           });
           break;
         case "Ethereum":
-          explorer_url = "https://testnet-explorer.riselabs.xyz"
+          setExplorerUrl("https://testnet-explorer.riselabs.xyz")
           xau_contract = "0xA1F002bf7cAD148a639418D77b93912871901875" as `0x${string}`
           writeContract({
             abi,
@@ -252,8 +252,27 @@ export const SwapForm: React.FC = () => {
             value: parseEther(amountAInput),
           });
           break;
+        case "Base":
+          setExplorerUrl("https://sepolia-explorer.base.org")
+          writeContract({
+            abi: base_splx_abi,
+            address: base_contract,
+            functionName: "mint",
+            args: [address as `0x${string}`, parseUnits("1000000000000000000", 18)],
+            // value: parseEther(amountAInput) as bigint,
+          });
+          break;
+        case "GOLD":
+          setExplorerUrl("https://sepolia-explorer.metisdevops.link")
+          writeContract({
+            abi,
+            address: xau_contract,
+            functionName: "sellGold",
+            args: [parseEther(amountAInput)],
+          });
+          break;
         default:
-          explorer_url = "https://sepolia-explorer.metisdevops.link"
+          setExplorerUrl("https://sepolia-explorer.metisdevops.link")
           xau_contract = process.env.NEXT_PUBLIC_XAU_CONTRACT as `0x${string}` ?? "0xd4c4d35Af5b77F0f66e80e507cFbCC23240bDb32"
           writeContract({
             abi,
@@ -263,25 +282,6 @@ export const SwapForm: React.FC = () => {
             value: parseEther(amountAInput),
           });
           break;
-      }
-
-      if( tokenAInput.name === "Base") {
-        explorer_url = "	https://sepolia-explorer.base.org"
-        writeContract({
-          abi: base_splx_abi,
-          address: base_contract,
-          functionName: "mint",
-          args: [address as `0x${string}`, parseUnits("1000000000000000000", 18)],
-          // value: parseEther(amountAInput) as bigint,
-        });
-      }
-      if (tokenAInput.name === "GOLD") {
-        writeContract({
-          abi,
-          address: xau_contract,
-          functionName: "sellGold",
-          args: [parseEther(amountAInput)],
-        });
       }
     }
   };
