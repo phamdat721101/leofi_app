@@ -87,7 +87,7 @@ export const SwapForm: React.FC = () => {
         // explorer_url = "https://sepolia-explorer.base.org"
         break;
       default:
-        explorer_url = "https://sepolia-explorer.metisdevops.link"
+        // explorer_url = "https://sepolia-explorer.metisdevops.link"
         break;
     }
 
