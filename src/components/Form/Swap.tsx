@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { chainData } from "@/data/chainData";
 import { base_splx_abi } from '@/abi/base_slpx_abi'
-require('dotenv').config();
+//require('dotenv').config();
 
 type TokenType = {
   tokenSymbol: string;

@@ -65,12 +65,21 @@ export function Header() {
                     <Image
                       src="/leofi_logo.png"
                       alt="Logo"
-                      width={32}
-                      height={32}
-                      className="h-8 w-auto"
+                      width={128}
+                      height={64}
+                      className="h-16 w-auto"
                     />
                   </div>
                 </SheetTitle>
+
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={disconectWallet}
+                    className="btn-grad px-2 py-1 rounded text-sm"
+                  >
+                    Create wallet
+                  </button>
+                </div>
               </SheetHeader>
               <nav className="mt-8 flex flex-col space-y-4">
                 {navigation.map((item) => (
@@ -85,7 +94,7 @@ export function Header() {
                     {item.name}
                   </Link>
                 ))}
-                <div className="space-y-4 py-2">
+                {/* <div className="space-y-4 py-2">
                   <p className="text-base font-medium text-white">Earn</p>
                   {earnMenuItems.map((item) => (
                     <Link
@@ -96,17 +105,18 @@ export function Header() {
                       {item.name}
                     </Link>
                   ))}
-                </div>
+                </div> */}
               </nav>
+
             </SheetContent>
           </Sheet>
           <Link href="/" className="flex items-center">
             <Image
               src="/leofi_logo.png"
               alt="Logo"
-              width={64}
-              height={32}
-              className="h-6 w-auto"
+              width={120}
+              height={60}
+              className="h-18 w-auto"
             />
           </Link>
         </div>
@@ -145,8 +155,8 @@ export function Header() {
         <div className="flex items-end">
           {isConnected ? (
             <div className="flex items-center space-x-2">
-              <Wallet className="w-5 h-5" />
-              <span className="text-sm">{`${address?.slice(0, 6)}...${address?.slice(-4)}`}</span>
+              <Wallet className="hidden sm:inline w-5 h-5" />
+              <span className="hidden sm:inline text-sm">{`${address?.slice(0, 6)}...${address?.slice(-4)}`}</span>
               <button
                 onClick={disconectWallet}
                 className="btn-grad px-2 py-1 rounded text-sm"

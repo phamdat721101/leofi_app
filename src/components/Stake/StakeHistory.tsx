@@ -26,58 +26,50 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { useAccount } from "wagmi";
 import Link from "next/link";
 
-// Mock data for demonstration
-const transactions = [
-  {
-    id: "1",
-    type: "Stake",
-    tokenFrom: {
-      symbol: process.env.NEXT_PUBLIC_TOKEN_NAME as string,
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
-    },
-    tokenTo: {
-      symbol: process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME as string,
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
-    },
-    amount: "0.5 GEM",
-    date: "2023-05-10T14:30:00Z",
-    status: "Completed",
-  },
-  {
-    id: "2",
-    type: "Unstake",
-    tokenFrom: {
-      symbol: process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME as string,
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
-    },
-    tokenTo: {
-      symbol: process.env.NEXT_PUBLIC_TOKEN_NAME as string,
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
-    },
-    amount: "0.5 stGEM",
-    date: "2023-05-09T10:15:00Z",
-    status: "Completed",
-  },
-  {
-    id: "3",
-    type: "Stake",
-    tokenFrom: {
-      symbol: process.env.NEXT_PUBLIC_TOKEN_NAME as string,
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
-    },
-    tokenTo: {
-      symbol: process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME as string,
-      logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
-    },
-    amount: "2 GEM",
-    date: "2023-05-08T18:45:00Z",
-    status: "Completed",
-  },
-];
+const EmptyState = () => (
+  <div className="flex flex-col items-center justify-center py-12 text-center">
+    <div className="text-gray-400 mb-4">
+      <ArrowRightLeft className="w-12 h-12 mx-auto mb-4 opacity-50" />
+      <p className="text-lg">No transactions found</p>
+      <p className="text-sm">Your staking history will appear here</p>
+    </div>
+  </div>
+);
+
+const TableSkeleton = () => (
+  <>
+    {[...Array(6)].map((_, index) => (
+      <TableRow key={index}>
+        <TableCell>
+          <Skeleton className="h-8 w-20 bg-gray-200" />
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-6 w-6 rounded-full bg-gray-200" />
+            <Skeleton className="h-4 w-16 bg-gray-200" />
+            <Skeleton className="h-4 w-4 bg-gray-200" />
+            <Skeleton className="h-6 w-6 rounded-full bg-gray-200" />
+            <Skeleton className="h-4 w-16 bg-gray-200" />
+          </div>
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-4 w-32 bg-gray-200" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-6 w-20 bg-gray-200" />
+        </TableCell>
+        <TableCell className="text-right">
+          <Skeleton className="h-8 w-16 ml-auto bg-gray-200" />
+        </TableCell>
+      </TableRow>
+    ))}
+  </>
+);
 
 export default function History() {
   const [filter, setFilter] = useState("all");
@@ -91,10 +83,6 @@ export default function History() {
     return tx.type.toLowerCase() === filter.toLowerCase();
   });
 
-  useEffect(()=>{
-    console.log(filter);
-  },[filter])
-
   const StakeToken = {
     symbol: process.env.NEXT_PUBLIC_STAKE_TOKEN_NAME as string,
     logo_url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5705.png",
@@ -107,6 +95,13 @@ export default function History() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!address) {
+        setLoading(false);
+        setData([]);
+        return;
+      }
+
+      setLoading(true);
       const API_URL = `${process.env.NEXT_PUBLIC_BACK_END_ADDRESS}/v1/token/stake_tx?addr=${address}`;
       try {
         const res = await fetch(API_URL);
@@ -126,16 +121,16 @@ export default function History() {
   }, [address]);
 
   return (
-    <Card className="p-0 w-full bg-transparent	border-0">
+    <Card className="p-0 w-full bg-transparent border-0">
       <CardHeader className="py-4 px-0">
-        <CardTitle className="text-2xl font-bold text-gray-50">
+        <CardTitle className="text-xl md:text-2xl font-bold text-gray-50">
           Stake History
         </CardTitle>
       </CardHeader>
       <CardContent className="px-0">
-        <div className="flex justify-between items-center mb-5">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Filter transactions" />
             </SelectTrigger>
             <SelectContent>
@@ -144,113 +139,121 @@ export default function History() {
               <SelectItem value="unstake">UnStake</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline">Export CSV</Button>
+          <Button variant="outline" className="w-full sm:w-auto">Export CSV</Button>
         </div>
-        <Table className="bg-[#282e3a] rounded-lg">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-white">Type</TableHead>
-              <TableHead className="text-white">Assets</TableHead>
-              {/* <TableHead className="text-white">Amount</TableHead> */}
-              <TableHead className="text-white">Date</TableHead>
-              <TableHead className="text-white">Status</TableHead>
-              <TableHead className="text-right text-white">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredData.map((tx: any) => (
-              <TableRow key={tx.id}>
-                <TableCell>
-                  <Badge variant={tx.type === "unstake" ? "secondary" : "default"}>
-                    {tx.type === "unstake" ? (
-                      <ArrowRightLeft className="w-4 h-4 mr-1" />
-                    ) : (
-                      <Coins className="w-4 h-4 mr-1" />
-                    )}
-                    {tx.type}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center space-x-2 text-white">
-                    {tx.type == "stake" ? (
-                      <>
-                        <Avatar className="w-6 h-6">
-                          <Image
-                            src={Token.logo_url}
-                            alt={Token.symbol}
-                            width={40}
-                            height={40}
-                          />
-                        </Avatar>
-                        <span>{Token.symbol}</span>
-                        <ArrowRightLeft className="w-4 h-4" />
-                        <Avatar className="w-6 h-6">
-                          <Image
-                            src={StakeToken.logo_url}
-                            alt={StakeToken.symbol}
-                            width={40}
-                            height={40}
-                          />
-                        </Avatar>
-                        <span>{StakeToken.symbol}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Avatar className="w-6 h-6">
-                          <Image
-                            src={StakeToken.logo_url}
-                            alt={StakeToken.symbol}
-                            width={40}
-                            height={40}
-                          />
-                        </Avatar>
-                        <span>{StakeToken.symbol}</span>
-                        <ArrowRightLeft className="w-4 h-4" />
-                        <Avatar className="w-6 h-6">
-                          <Image
-                            src={Token.logo_url}
-                            alt={Token.symbol}
-                            width={40}
-                            height={40}
-                          />
-                        </Avatar>
-                        <span>{Token.symbol}</span>
-                      </>
-                    )}
 
-                  </div>
-                </TableCell>
-                {/* <TableCell className="text-white">
-                  {tx.amount}
-                  <br />
-                </TableCell> */}
-                <TableCell className="text-white">
-                  {new Date(tx.timestamp).toLocaleString()}
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant="default"
-                  >
-                    Completed
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right text-white">
-                  <Link
-                    href={`https://sepolia-explorer.metisdevops.link/tx/${tx.tx_hash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="ghost" size="sm">
-                      <ExternalLink className="w-4 h-4 mr-1" />
-                      View
-                    </Button>
-                  </Link>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="rounded-lg bg-[#282e3a] overflow-hidden">
+          <div className="hidden md:block border-b border-gray-700">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-white bg-[#282e3a]">Type</TableHead>
+                  <TableHead className="text-white bg-[#282e3a]">Assets</TableHead>
+                  <TableHead className="text-white bg-[#282e3a]">Date</TableHead>
+                  <TableHead className="text-white bg-[#282e3a]">Status</TableHead>
+                  <TableHead className="text-right text-white bg-[#282e3a]">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+            </Table>
+          </div>
+
+          <div className="max-h-[500px] overflow-y-auto scrollbar-hide">
+            <Table>
+              <TableBody>
+                {loading ? (
+                  <TableSkeleton />
+                ) : !address ? (
+                  <TableRow>
+                    <TableCell colSpan={5}>
+                      <EmptyState />
+                    </TableCell>
+                  </TableRow>
+                ) : filteredData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5}>
+                      <EmptyState />
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredData.map((tx: any) => (
+                    <TableRow key={tx.id} className="flex flex-col md:table-row border-b border-gray-700">
+                      <TableCell className="py-3 md:py-4">
+                        <Badge variant={tx.type === "unstake" ? "secondary" : "default"}>
+                          {tx.type === "unstake" ? (
+                            <ArrowRightLeft className="w-4 h-4 mr-1" />
+                          ) : (
+                            <Coins className="w-4 h-4 mr-1" />
+                          )}
+                          {tx.type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-3 md:py-4">
+                        <div className="flex items-center space-x-2 text-white overflow-x-auto">
+                          {tx.type == "stake" ? (
+                            <>
+                              <Avatar className="w-6 h-6 flex-shrink-0">
+                                <Image src={Token.logo_url} alt={Token.symbol} width={40} height={40} />
+                              </Avatar>
+                              <span className="flex-shrink-0">{Token.symbol}</span>
+                              <ArrowRightLeft className="w-4 h-4 flex-shrink-0" />
+                              <Avatar className="w-6 h-6 flex-shrink-0">
+                                <Image src={StakeToken.logo_url} alt={StakeToken.symbol} width={40} height={40} />
+                              </Avatar>
+                              <span className="flex-shrink-0">{StakeToken.symbol}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Avatar className="w-6 h-6 flex-shrink-0">
+                                <Image src={StakeToken.logo_url} alt={StakeToken.symbol} width={40} height={40} />
+                              </Avatar>
+                              <span className="flex-shrink-0">{StakeToken.symbol}</span>
+                              <ArrowRightLeft className="w-4 h-4 flex-shrink-0" />
+                              <Avatar className="w-6 h-6 flex-shrink-0">
+                                <Image src={Token.logo_url} alt={Token.symbol} width={40} height={40} />
+                              </Avatar>
+                              <span className="flex-shrink-0">{Token.symbol}</span>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 md:py-4 text-white">
+                        <div className="md:hidden font-medium text-gray-400 mb-1">Date:</div>
+                        {new Date(tx.timestamp).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="py-3 md:py-4">
+                        <div className="md:hidden font-medium text-gray-400 mb-1">Status:</div>
+                        <Badge variant="default">Completed</Badge>
+                      </TableCell>
+                      <TableCell className="py-3 md:py-4 text-right">
+                        <div className="md:hidden font-medium text-gray-400 mb-1">Action:</div>
+                        <Link
+                          href={`https://sepolia-explorer.metisdevops.link/tx/${tx.tx_hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="ghost" size="sm" className="w-full md:w-auto justify-center text-white">
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+        <style jsx global>{`
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}</style>
       </CardContent>
     </Card>
-  );
+  )
 }

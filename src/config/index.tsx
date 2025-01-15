@@ -1,7 +1,7 @@
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
 
 import { cookieStorage, createStorage } from 'wagmi'
-import { mainnet, sepolia, baseSepolia, baseGoerli } from 'wagmi/chains'
+import { mainnet, sepolia, baseSepolia } from 'wagmi/chains'
 import { defineChain } from 'viem'
 
 
