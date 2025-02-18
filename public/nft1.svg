@@ -1,0 +1,6 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#2A1B3D"/>
+  <circle cx="200" cy="200" r="120" fill="#FF6B6B"/>
+  <text x="200" y="220" font-family="Arial" font-size="32" fill="white" text-anchor="middle">Leo Genesis</text>
+  <path d="M200,100 L230,170 L300,170 L245,215 L265,285 L200,240 L135,285 L155,215 L100,170 L170,170 Z" fill="#FFD93D"/>
+</svg>
